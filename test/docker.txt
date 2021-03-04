@@ -1,0 +1,242 @@
+docker run
+docker info (information)
+docker history #imagename
+docker system -df -v (info on disk space)
+docker ps -a
+docker stop #name
+docker rm #name(remove container permanently)
+docker images
+docker rmi #name(deletes image)
+docker pull #name(only pulls)
+docker exec #name #command
+docker run -it #name bash
+docker run -d #name(run background)
+docker attach #first-6-id of the container(to attach background container)
+
+---- Docker Run ----
+docker run redis:4.0 (tag to pull specific version)
+
+docker run -it #app image with interactive input 
+
+docker run -p 80(remote):5000(docker listening) #name (port mapping)
+
+docker run -v /host-dir:/docker-dir-we-want-to-mount #name  (persistent docker volume)
+
+docker run -e PASSWORD=pass123 redis (environment variable)
+
+docker inspect #name (details of container)
+
+docker logs #container name
+
+docker run --cpu=.5 #name (cpu utilization)
+
+docker run --memory=100m #name (memory utilization)
+
+
+
+--docker image --
+
+docker images
+
+sample docker file to create image 
+--
+FROM ubunutu
+
+RUN apt-get update
+RUN apt-get install -y python
+
+RUN pip install flask
+
+COPY . /opt/app.py
+
+EXPOSE 8080
+
+ENTRYPOINT FLASK_APP-/opt/app.py flask run --host=0.0.0.0
+--
+
+docker build -f dockerfile -t jjso(docker username)/new-image-webapp  (creates a image from dockerfile) (use docker login to login)
+
+then 
+docker push jjso(uniquename)/new-image-webapp
+
+
+----Docker run--
+dockerfile eg
+
+FROM ubuntu
+
+CMD sleep 5
+(or)
+CMD["sleep","5"] (only used for hardcoding)
+docker run #name sleep 10 (dynamic input)
+
+
+Entrypoint-----
+
+FROM ubuntu
+
+ENTRYPOINT ["sleep"]
+#usage docker run #image_name 10 (run sleep 10 sec)
+CMD["5"] (adds 5 default when not given else overridden)
+
+
+
+--Docker run links--
+its is used when composing multpile container and one container want s to resolve another name
+eg:
+
+docker run -d --name=redis redis
+docker run -d --name=webapp --link redis:redis webapp (wthis will create hosts record on this container to map redis container)
+
+---Docker-Compose.yml
+
+redis:
+    image: redis
+
+db:
+    image  postgresql:9.4
+
+vote:
+    image: voting-app  
+    (or)
+    image: ./vote (this folder contains dockerfile and all predefined source code files to build image)
+    ports:
+     - 5000:80
+    links:
+     - redis
+
+result:
+    image: result_app
+    ports:
+     - 5001:80
+    links:
+     - db
+
+--docker-compose -version2
+
+version: 2
+services:
+redis:
+    image: redis
+
+db:
+    image  postgresql:9.4
+
+vote:
+    image: voting-app  
+    (or)
+    image: ./vote (this folder contains dockerfile and all predefined source code files to build image)
+    ports:
+     - 5000:80
+    depends_on:
+     - redis
+
+result:
+    image: result_app
+    ports:
+     - 5001:80
+    depends_on:
+     - db
+
+docker-compose version3 support only networking
+
+version:3
+services:
+        redis:
+            image: redis
+
+        db:
+            image  postgresql:9.4
+
+        vote:
+            image: voting-app  
+    (or)
+            image: ./vote (this folder contains dockerfile and all predefined source code files to build image)
+            ports:
+             - 5000:80
+            networks:
+            - front-end
+            - back-end
+
+        result:
+            image: result_app
+            ports:
+            - 5001:80
+            networks:
+            - front-end
+            - back-end
+
+networks:
+    front-end:
+    back-end:
+
+
+
+--docker-compose
+docker-compose up
+
+
+--private registry
+
+docker run -p 5000:5000 --name registry registry:2
+
+docker image tage #name localhot:5000/#image_named
+
+doker push localhot:/5000/#image_name
+
+docker pull localhost:5000#imagename
+
+
+--docker engine
+
+docker cli (enter cmdline)
+docker api (dcoer api requests)
+docker daemon (docker service)
+
+
+--containerziztion
+pid
+interpricess
+network 
+mount( etc in a single name space)
+
+---file system
+
+/var/lib/docker
+ /aufs
+ /containers (dir name inside is same ast container id in docker ps -a)
+ /images
+ /volumes (use docker volume to create persistem mounts)
+
+
+--docker storage
+data volume create #name
+
+docker run -v #name:/varlib/mysql(eg)  (volume not created prior it will automatically created)  -volume mount
+
+docker run -v /dar/mysql:/var/lib/mysql mysql (bind mount)
+
+docker run --mount type=bind source=/var/lib destination=/var/lib/mysql mysql (new version or method)
+
+--docker networking 
+
+1 bridged
+2 none
+3 host
+
+docker network create --driver bridge --subnet 192.168.0.0/24 #bridgednetwork
+
+docker network ls 
+
+--docker swarm 
+
+docker swarm int  (swarm manager)
+
+docker swarm join #token  (worker node)
+
+docker service create --replicas=100 -p 8080:80 nodejs (swam cmdline)
+
+
+
+
+
